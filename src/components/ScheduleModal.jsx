@@ -8,28 +8,17 @@ export default function ScheduleModal({ schedule, supplyTypes, onClose }) {
   const [error, setError] = useState(false)
 
   useEffect(() => {
-    if (!schedule.houseManageNo) {
-      setError(true)
-      return
-    }
-    setLoading(true)
-    setError(false)
+    if (!schedule.houseManageNo) { setError(true); return }
+    setLoading(true); setError(false)
     fetchScheduleDetail(schedule.houseManageNo, schedule.pblancNo, schedule.houseSecd)
-      .then(data => {
-        if (data && data.title) setDetail(data)
-        else setError(true)
-      })
+      .then(data => { if (data && data.title) setDetail(data); else setError(true) })
       .catch(() => setError(true))
       .finally(() => setLoading(false))
   }, [schedule])
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div
-        className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
-        onClick={e => e.stopPropagation()}
-      >
-        {/* 헤더 */}
+      <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl z-10">
           <h3 className="text-base font-bold text-gray-800">입주자모집공고 정보</h3>
           <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg">
@@ -38,82 +27,85 @@ export default function ScheduleModal({ schedule, supplyTypes, onClose }) {
             </svg>
           </button>
         </div>
-
         <div className="p-6">
-          {loading && (
-            <div className="flex flex-col items-center justify-center py-16">
-              <div className="animate-spin rounded-full h-10 w-10 border-2 border-blue-400 border-t-transparent mb-4"></div>
-              <p className="text-sm text-gray-400">상세 정보를 불러오는 중...</p>
-            </div>
-          )}
-
-          {error && !loading && (
-            <NoDetailFallback schedule={schedule} typeInfo={typeInfo} />
-          )}
-
-          {detail && !loading && (
-            <DetailContent detail={detail} />
-          )}
+          {loading && <Loading />}
+          {error && !loading && <Fallback schedule={schedule} typeInfo={typeInfo} />}
+          {detail && !loading && <Detail d={detail} />}
         </div>
       </div>
     </div>
   )
 }
 
-function DetailContent({ detail }) {
+function Detail({ d }) {
   return (
     <>
       {/* 입주자모집공고 주요정보 */}
-      <SectionTitle>입주자모집공고 주요정보</SectionTitle>
+      <Sec>입주자모집공고 주요정보</Sec>
       <table className="w-full border-collapse mb-4">
         <tbody>
-          <tr>
-            <td colSpan={2} className="border border-gray-200 bg-gray-50 text-center py-3 font-bold text-gray-800 text-lg">
-              {detail.title}
-            </td>
-          </tr>
-          <TRow label="공급위치" value={detail.location} />
-          <TRow label="공급규모" value={detail.totalUnits} />
-          <TRow label="입주자모집공고 관련 문의" value="사업주체 또는 분양사무실로 문의" />
-          <TRow label="문의처" value={detail.phone} />
+          <tr><td colSpan={2} className="border border-gray-200 bg-gray-50 text-center py-3 font-bold text-gray-800 text-lg">{d.title}</td></tr>
+          <TR l="공급위치" v={d.location} />
+          <TR l="공급규모" v={d.totalUnits} />
+          <TR l="입주자모집공고 관련 문의" v="사업주체 또는 분양사무실로 문의" />
+          <TR l="문의처" v={d.phone} />
         </tbody>
       </table>
 
       {/* 모집공고문 보기 */}
       <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 mb-6 gap-4">
-        <p className="text-xs text-gray-500">
-          * 입주자모집공고 관련사항은 사업주체 또는 분양사무실로 문의하시기 바랍니다.
-        </p>
-        {detail.documentUrl && (
-          <a
-            href={detail.documentUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="shrink-0 px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-100 transition"
-          >
+        <p className="text-xs text-gray-500">* 입주자모집공고 관련사항은 사업주체 또는 분양사무실로 문의하시기 바랍니다.</p>
+        {d.documentUrl && (
+          <a href={d.documentUrl} target="_blank" rel="noopener noreferrer"
+            className="shrink-0 px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-100 transition">
             모집공고문 보기
           </a>
         )}
       </div>
 
       {/* 청약일정 */}
-      <SectionTitle>청약일정</SectionTitle>
+      <Sec>청약일정</Sec>
       <table className="w-full border-collapse mb-6">
         <tbody>
-          <TRow label="모집공고일" value={detail.announceDate} />
-          {detail.receptions && detail.receptions.length > 0 && (
+          <TR l="모집공고일" v={d.announceDate} />
+
+          {/* 청약접수 - 해당지역/기타지역 or 단순 */}
+          {d.receptions && d.receptions.length > 0 && d.receptionType === 'region' && (
             <>
               <tr>
-                <th rowSpan={detail.receptions.length + 1} className="border border-gray-200 bg-gray-50 text-sm font-semibold text-gray-600 w-32 px-4 py-2 text-left align-top">
-                  청약접수
-                </th>
+                <th rowSpan={d.receptions.length + 1} className="border border-gray-200 bg-gray-50 text-sm font-semibold text-gray-600 w-32 px-4 py-2 text-left align-top">청약접수</th>
+                <td className="border border-gray-200 p-0">
+                  <div className="grid grid-cols-4 text-center text-xs font-semibold text-gray-500 bg-gray-50 py-2">
+                    <span>구분</span><span>해당지역</span><span>기타지역</span><span>접수장소</span>
+                  </div>
+                </td>
+              </tr>
+              {d.receptions.map((r, i) => (
+                <tr key={i}>
+                  <td className="border border-gray-200 p-0">
+                    <div className="grid grid-cols-4 text-center text-sm py-2">
+                      <span className="text-gray-700 font-medium">{r.type}</span>
+                      <span className="text-gray-700">{r.local}</span>
+                      <span className="text-gray-700">{r.other}</span>
+                      <span className="text-gray-500">{r.method}</span>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </>
+          )}
+
+          {d.receptions && d.receptions.length > 0 && d.receptionType === 'simple' && (
+            <>
+              <tr>
+                <th rowSpan={d.receptions.length + 1} className="border border-gray-200 bg-gray-50 text-sm font-semibold text-gray-600 w-32 px-4 py-2 text-left align-top">청약접수</th>
                 <td className="border border-gray-200 p-0">
                   <div className="grid grid-cols-3 text-center text-xs font-semibold text-gray-500 bg-gray-50 py-2">
                     <span>구분</span><span>접수기간</span><span>접수장소</span>
                   </div>
                 </td>
               </tr>
-              {detail.receptions.map((r, i) => (
+              {d.receptions.map((r, i) => (
                 <tr key={i}>
                   <td className="border border-gray-200 p-0">
                     <div className="grid grid-cols-3 text-center text-sm py-2">
@@ -126,25 +118,29 @@ function DetailContent({ detail }) {
               ))}
             </>
           )}
-          <TRow label="당첨자 발표일" value={detail.winnerDate} />
-          <TRow label="계약일" value={detail.contractDate} />
+
+          <TR l="당첨자 발표일" v={
+            d.winnerUrl
+              ? <>{d.winnerDate.replace(d.winnerUrl, '').replace(/[()]/g, '').trim()} (<a href={d.winnerUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline break-all">{d.winnerUrl}</a>)</>
+              : d.winnerDate
+          } />
+          <TR l="계약일" v={d.contractDate} />
         </tbody>
       </table>
 
       {/* 공급대상 */}
-      {detail.supplyRows && detail.supplyRows.length > 0 && (
+      {d.supplyRows && d.supplyRows.length > 0 && (
         <>
-          <SectionTitle>공급대상</SectionTitle>
-          <p className="text-xs text-gray-400 mb-2">* 주택형=주거전용면적(type이 있는 경우 type포함)</p>
-          <div className="overflow-x-auto mb-6">
+          <Sec>공급대상</Sec>
+          <div className="overflow-x-auto mb-2">
             <table className="w-full border-collapse text-sm">
               <thead>
                 <tr className="bg-gray-50">
-                  <th rowSpan={2} className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold text-xs">주택<br/>구분</th>
-                  <th rowSpan={2} className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold text-xs">주택형</th>
-                  <th rowSpan={2} className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold text-xs">주택공급면적<br/><span className="font-normal text-gray-400">(주거전용+주거공용)</span></th>
-                  <th colSpan={3} className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold text-xs">공급세대수</th>
-                  <th rowSpan={2} className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold text-xs">주택관리번호<br/>(모델번호)</th>
+                  <th rowSpan={2} className="border border-gray-200 px-2 py-2 text-gray-600 font-semibold text-xs">주택<br/>구분</th>
+                  <th rowSpan={2} className="border border-gray-200 px-2 py-2 text-gray-600 font-semibold text-xs">주택형</th>
+                  <th rowSpan={2} className="border border-gray-200 px-2 py-2 text-gray-600 font-semibold text-xs">주택공급면적<br/><span className="font-normal text-gray-400">(주거전용+주거공용)</span></th>
+                  <th colSpan={3} className="border border-gray-200 px-2 py-1 text-gray-600 font-semibold text-xs">공급세대수</th>
+                  <th rowSpan={2} className="border border-gray-200 px-2 py-2 text-gray-600 font-semibold text-xs">주택관리번호<br/>(모델번호)</th>
                 </tr>
                 <tr className="bg-gray-50">
                   <th className="border border-gray-200 px-2 py-1 text-gray-600 font-semibold text-xs">일반</th>
@@ -153,79 +149,71 @@ function DetailContent({ detail }) {
                 </tr>
               </thead>
               <tbody>
-                {detail.supplyRows.map((row, i) => {
-                  // '계' 행 (합계)
-                  const isTotalRow = row[0] === '계' || row[1] === '계'
-                  if (isTotalRow) {
-                    // 합계 행: 칸이 밀려있을 수 있으므로 뒤에서 3개가 일반/특별/계
+                {d.supplyRows.map((row, i) => {
+                  const isTotal = row[0] === '계' || row[1] === '계'
+                  if (isTotal) {
                     const nums = row.filter(c => c !== '' && c !== '계')
                     return (
                       <tr key={i} className="bg-gray-50 font-semibold">
                         <td colSpan={3} className="border border-gray-200 px-3 py-2 text-center text-gray-700">계</td>
-                        {nums.slice(0, 3).map((c, j) => (
-                          <td key={j} className="border border-gray-200 px-3 py-2 text-center text-gray-700">{c}</td>
-                        ))}
-                        <td className="border border-gray-200 px-3 py-2 text-center text-gray-400"></td>
+                        {nums.slice(0, 3).map((c, j) => <td key={j} className="border border-gray-200 px-3 py-2 text-center text-gray-700">{c}</td>)}
+                        <td className="border border-gray-200"></td>
                       </tr>
                     )
                   }
-
                   return (
                     <tr key={i}>
-                      {row.map((cell, j) => (
-                        <td key={j} className="border border-gray-200 px-3 py-2 text-center text-gray-700 text-xs">
-                          {cell}
-                        </td>
-                      ))}
-                      {/* 칸 수가 부족하면 빈 칸 채우기 */}
-                      {row.length < 7 && Array.from({ length: 7 - row.length }).map((_, j) => (
-                        <td key={`empty-${j}`} className="border border-gray-200 px-3 py-2"></td>
-                      ))}
+                      {row.map((cell, j) => <td key={j} className="border border-gray-200 px-2 py-2 text-center text-gray-700 text-xs">{cell}</td>)}
+                      {row.length < 7 && Array.from({ length: 7 - row.length }).map((_, j) => <td key={`e${j}`} className="border border-gray-200"></td>)}
                     </tr>
                   )
                 })}
               </tbody>
             </table>
           </div>
+          <p className="text-[11px] text-gray-400 mb-1">* 공급세대수는 사업주체의 최초 입주자모집 공고문 기준입니다. 특별공급 신청 미달 시 잔여물량은 일반공급으로 전환됨에 따라 일반공급 세대 수가 변경될 수 있으므로 최종 일반공급 세대수는 일반공급 신청일에 '청약접수 경쟁률'에서 확인 또는 사업주체에 문의하시기 바랍니다.</p>
+          <p className="text-[11px] text-gray-400 mb-6">* 주택형=주거전용면적(type이 있는 경우 type포함)</p>
         </>
       )}
 
-      {/* 공급금액 및 입주예정월 */}
-      {detail.prices && detail.prices.length > 0 && (
+      {/* 공급금액 */}
+      {d.prices && d.prices.length > 0 && (
         <>
-          <SectionTitle>공급내역 및 입주예정월</SectionTitle>
+          <Sec>공급금액{d.priceHeaders?.some(h => h.includes('2순위')) ? ', 2순위 청약금' : ''} 및 입주예정월</Sec>
           <p className="text-xs text-gray-400 mb-2">공급금액(단위:만원)</p>
-          <div className="overflow-x-auto mb-6">
+          <div className="overflow-x-auto mb-2">
             <table className="w-full border-collapse text-sm">
               <thead>
                 <tr className="bg-gray-50">
-                  <th className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold text-xs">주택형</th>
-                  <th className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold text-xs">공급금액(최고가 기준)</th>
-                  <th className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold text-xs">입주예정월</th>
+                  {(d.priceHeaders && d.priceHeaders.length > 0 ? d.priceHeaders : ['주택형', '공급금액(최고가 기준)', '입주예정월']).map((h, i) => (
+                    <th key={i} className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold text-xs">{h}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
-                {detail.prices.map((row, i) => (
+                {d.prices.map((row, i) => (
                   <tr key={i}>
                     {row.map((cell, j) => (
-                      <td key={j} className="border border-gray-200 px-3 py-2 text-center text-gray-700">
-                        {cell}
-                      </td>
+                      <td key={j} className="border border-gray-200 px-3 py-2 text-center text-gray-700">{cell}</td>
                     ))}
-                    {row.length < 3 && <td className="border border-gray-200"></td>}
+                    {row.length < (d.priceHeaders?.length || 3) && Array.from({ length: (d.priceHeaders?.length || 3) - row.length }).map((_, j) => (
+                      <td key={`e${j}`} className="border border-gray-200"></td>
+                    ))}
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+          {d.moveInDate && <p className="text-xs text-gray-600 mb-1">* 입주예정월 : {d.moveInDate}</p>}
+          <p className="text-[11px] text-gray-400 mb-6">* 층별(동호수별) 세부 공급금액은 사업주체의 입주자모집 공고문을 참고하시기 바랍니다.</p>
         </>
       )}
 
       {/* 기타사항 */}
-      {(detail.developer || detail.constructor) && (
+      {(d.developer || d.constructor) && (
         <>
-          <SectionTitle>기타사항</SectionTitle>
-          <table className="w-full border-collapse text-sm mb-6">
+          <Sec>기타사항</Sec>
+          <table className="w-full border-collapse text-sm mb-2">
             <thead>
               <tr className="bg-gray-50">
                 <th className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold text-xs">시행사</th>
@@ -235,65 +223,59 @@ function DetailContent({ detail }) {
             </thead>
             <tbody>
               <tr>
-                <td className="border border-gray-200 px-3 py-2 text-center text-gray-700">{detail.developer}</td>
-                <td className="border border-gray-200 px-3 py-2 text-center text-gray-700">{detail.constructor}</td>
-                <td className="border border-gray-200 px-3 py-2 text-center text-gray-700">{detail.devPhone}</td>
+                <td className="border border-gray-200 px-3 py-2 text-center text-gray-700">{d.developer}</td>
+                <td className="border border-gray-200 px-3 py-2 text-center text-gray-700">{d.constructor}</td>
+                <td className="border border-gray-200 px-3 py-2 text-center text-gray-700">{d.devPhone}</td>
               </tr>
             </tbody>
           </table>
+          {d.notices && d.notices.length > 0 && (
+            <div className="mb-6">
+              {d.notices.map((n, i) => <p key={i} className="text-[11px] text-gray-400">{n}</p>)}
+            </div>
+          )}
         </>
       )}
-
-      <p className="text-[11px] text-gray-400 leading-relaxed">
-        * 특별공급 신청 미달 시 잔여물량은 일반공급으로 전환됨에 따라 일반공급 세대 수가 변경될 수 있습니다.<br />
-        * 층별(동호수별) 세부 공급금액은 사업주체의 입주자모집 공고문을 참고하시기 바랍니다.
-      </p>
     </>
   )
 }
 
-function NoDetailFallback({ schedule, typeInfo }) {
+function Loading() {
+  return (
+    <div className="flex flex-col items-center justify-center py-16">
+      <div className="animate-spin rounded-full h-10 w-10 border-2 border-blue-400 border-t-transparent mb-4"></div>
+      <p className="text-sm text-gray-400">상세 정보를 불러오는 중...</p>
+    </div>
+  )
+}
+
+function Fallback({ schedule, typeInfo }) {
   return (
     <div className="text-center py-12">
       <h4 className="text-lg font-bold text-gray-800 mb-2">{schedule.name}</h4>
-      <span
-        className="inline-block px-3 py-1 rounded-full text-xs font-semibold mb-4"
-        style={{
-          backgroundColor: (typeInfo?.color || '#6b7280') + '18',
-          color: typeInfo?.color || '#6b7280',
-        }}
-      >
+      <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold mb-4"
+        style={{ backgroundColor: (typeInfo?.color || '#6b7280') + '18', color: typeInfo?.color || '#6b7280' }}>
         {typeInfo?.label || schedule.type}
       </span>
       <div className="text-sm text-gray-500 space-y-1">
         <p>지역: {schedule.region}</p>
         <p>청약일: {schedule.date}</p>
       </div>
-      <p className="mt-6 text-xs text-gray-400">
-        Netlify Functions 배포 후 상세 정보를 확인할 수 있습니다.
-      </p>
+      <p className="mt-6 text-xs text-gray-400">Netlify Functions 배포 후 상세 정보를 확인할 수 있습니다.</p>
     </div>
   )
 }
 
-function SectionTitle({ children }) {
-  return (
-    <h4 className="text-base font-bold text-gray-800 mb-3 pb-2 border-b-2 border-gray-800">
-      {children}
-    </h4>
-  )
+function Sec({ children }) {
+  return <h4 className="text-base font-bold text-gray-800 mb-3 pb-2 border-b-2 border-gray-800">{children}</h4>
 }
 
-function TRow({ label, value }) {
-  if (!value) return null
+function TR({ l, v }) {
+  if (!v) return null
   return (
     <tr>
-      <th className="border border-gray-200 bg-gray-50 text-sm font-semibold text-gray-600 w-32 px-4 py-2.5 text-left">
-        {label}
-      </th>
-      <td className="border border-gray-200 text-sm text-gray-700 px-4 py-2.5">
-        {value}
-      </td>
+      <th className="border border-gray-200 bg-gray-50 text-sm font-semibold text-gray-600 w-32 px-4 py-2.5 text-left">{l}</th>
+      <td className="border border-gray-200 text-sm text-gray-700 px-4 py-2.5">{v}</td>
     </tr>
   )
 }
