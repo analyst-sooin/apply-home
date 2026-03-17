@@ -52,7 +52,7 @@ export default function ScheduleModal({ schedule, supplyTypes, onClose }) {
           )}
 
           {detail && !loading && (
-            <DetailContent detail={detail} schedule={schedule} typeInfo={typeInfo} />
+            <DetailContent detail={detail} />
           )}
         </div>
       </div>
@@ -60,58 +60,56 @@ export default function ScheduleModal({ schedule, supplyTypes, onClose }) {
   )
 }
 
-function DetailContent({ detail, schedule, typeInfo }) {
+function DetailContent({ detail }) {
   return (
     <>
       {/* 입주자모집공고 주요정보 */}
       <SectionTitle>입주자모집공고 주요정보</SectionTitle>
-      <table className="w-full border-collapse mb-6">
+      <table className="w-full border-collapse mb-4">
         <tbody>
           <tr>
             <td colSpan={2} className="border border-gray-200 bg-gray-50 text-center py-3 font-bold text-gray-800 text-lg">
               {detail.title}
             </td>
           </tr>
-          <InfoTableRow label="공급위치" value={detail.location} />
-          <InfoTableRow label="공급규모" value={detail.totalUnits} />
-          <InfoTableRow label="입주자모집공고 관련 문의" value="사업주체 또는 분양사무실로 문의" />
-          <InfoTableRow label="문의처" value={detail.phone} />
+          <TRow label="공급위치" value={detail.location} />
+          <TRow label="공급규모" value={detail.totalUnits} />
+          <TRow label="입주자모집공고 관련 문의" value="사업주체 또는 분양사무실로 문의" />
+          <TRow label="문의처" value={detail.phone} />
         </tbody>
       </table>
 
-      {/* 모집공고문 보기 버튼 */}
-      {detail.documentUrl && (
-        <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 mb-6">
-          <p className="text-xs text-gray-500">
-            * 입주자모집공고 관련사항은 사업주체 또는 분양사무실로 문의하시기 바랍니다.
-          </p>
+      {/* 모집공고문 보기 */}
+      <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 mb-6 gap-4">
+        <p className="text-xs text-gray-500">
+          * 입주자모집공고 관련사항은 사업주체 또는 분양사무실로 문의하시기 바랍니다.
+        </p>
+        {detail.documentUrl && (
           <a
             href={detail.documentUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="shrink-0 ml-4 px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-100 transition"
+            className="shrink-0 px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-100 transition"
           >
             모집공고문 보기
           </a>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* 청약일정 */}
       <SectionTitle>청약일정</SectionTitle>
       <table className="w-full border-collapse mb-6">
         <tbody>
-          <InfoTableRow label="모집공고일" value={detail.announceDate} />
+          <TRow label="모집공고일" value={detail.announceDate} />
           {detail.receptions && detail.receptions.length > 0 && (
             <>
               <tr>
-                <th rowSpan={detail.receptions.length + 1} className="border border-gray-200 bg-gray-50 text-sm font-semibold text-gray-600 w-32 px-4 py-2">
+                <th rowSpan={detail.receptions.length + 1} className="border border-gray-200 bg-gray-50 text-sm font-semibold text-gray-600 w-32 px-4 py-2 text-left align-top">
                   청약접수
                 </th>
                 <td className="border border-gray-200 p-0">
-                  <div className="grid grid-cols-3 text-center text-xs font-semibold text-gray-500 bg-gray-50 py-2 border-b border-gray-200">
-                    <span>구분</span>
-                    <span>접수기간</span>
-                    <span>접수장소</span>
+                  <div className="grid grid-cols-3 text-center text-xs font-semibold text-gray-500 bg-gray-50 py-2">
+                    <span>구분</span><span>접수기간</span><span>접수장소</span>
                   </div>
                 </td>
               </tr>
@@ -128,38 +126,64 @@ function DetailContent({ detail, schedule, typeInfo }) {
               ))}
             </>
           )}
-          <InfoTableRow label="당첨자 발표일" value={detail.winnerDate} />
-          <InfoTableRow label="계약일" value={detail.contractDate} />
+          <TRow label="당첨자 발표일" value={detail.winnerDate} />
+          <TRow label="계약일" value={detail.contractDate} />
         </tbody>
       </table>
 
       {/* 공급대상 */}
-      {detail.supplyTargets && detail.supplyTargets.length > 0 && (
+      {detail.supplyRows && detail.supplyRows.length > 0 && (
         <>
           <SectionTitle>공급대상</SectionTitle>
+          <p className="text-xs text-gray-400 mb-2">* 주택형=주거전용면적(type이 있는 경우 type포함)</p>
           <div className="overflow-x-auto mb-6">
             <table className="w-full border-collapse text-sm">
               <thead>
                 <tr className="bg-gray-50">
-                  <th className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold">주택구분</th>
-                  <th className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold">주택형</th>
-                  <th className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold">주택공급면적</th>
-                  <th className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold">일반</th>
-                  <th className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold">특별</th>
-                  <th className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold">계</th>
-                  <th className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold">주택관리번호</th>
+                  <th rowSpan={2} className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold text-xs">주택<br/>구분</th>
+                  <th rowSpan={2} className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold text-xs">주택형</th>
+                  <th rowSpan={2} className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold text-xs">주택공급면적<br/><span className="font-normal text-gray-400">(주거전용+주거공용)</span></th>
+                  <th colSpan={3} className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold text-xs">공급세대수</th>
+                  <th rowSpan={2} className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold text-xs">주택관리번호<br/>(모델번호)</th>
+                </tr>
+                <tr className="bg-gray-50">
+                  <th className="border border-gray-200 px-2 py-1 text-gray-600 font-semibold text-xs">일반</th>
+                  <th className="border border-gray-200 px-2 py-1 text-gray-600 font-semibold text-xs">특별</th>
+                  <th className="border border-gray-200 px-2 py-1 text-gray-600 font-semibold text-xs">계</th>
                 </tr>
               </thead>
               <tbody>
-                {detail.supplyTargets.map((row, i) => (
-                  <tr key={i}>
-                    {row.map((cell, j) => (
-                      <td key={j} className="border border-gray-200 px-3 py-2 text-center text-gray-700">
-                        {cell}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
+                {detail.supplyRows.map((row, i) => {
+                  // '계' 행 (합계)
+                  const isTotalRow = row[0] === '계' || row[1] === '계'
+                  if (isTotalRow) {
+                    // 합계 행: 칸이 밀려있을 수 있으므로 뒤에서 3개가 일반/특별/계
+                    const nums = row.filter(c => c !== '' && c !== '계')
+                    return (
+                      <tr key={i} className="bg-gray-50 font-semibold">
+                        <td colSpan={3} className="border border-gray-200 px-3 py-2 text-center text-gray-700">계</td>
+                        {nums.slice(0, 3).map((c, j) => (
+                          <td key={j} className="border border-gray-200 px-3 py-2 text-center text-gray-700">{c}</td>
+                        ))}
+                        <td className="border border-gray-200 px-3 py-2 text-center text-gray-400"></td>
+                      </tr>
+                    )
+                  }
+
+                  return (
+                    <tr key={i}>
+                      {row.map((cell, j) => (
+                        <td key={j} className="border border-gray-200 px-3 py-2 text-center text-gray-700 text-xs">
+                          {cell}
+                        </td>
+                      ))}
+                      {/* 칸 수가 부족하면 빈 칸 채우기 */}
+                      {row.length < 7 && Array.from({ length: 7 - row.length }).map((_, j) => (
+                        <td key={`empty-${j}`} className="border border-gray-200 px-3 py-2"></td>
+                      ))}
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
@@ -175,16 +199,16 @@ function DetailContent({ detail, schedule, typeInfo }) {
             <table className="w-full border-collapse text-sm">
               <thead>
                 <tr className="bg-gray-50">
-                  <th className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold">주택형</th>
-                  <th className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold">공급금액(최고가 기준)</th>
-                  <th className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold">입주예정월</th>
+                  <th className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold text-xs">주택형</th>
+                  <th className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold text-xs">공급금액(최고가 기준)</th>
+                  <th className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold text-xs">입주예정월</th>
                 </tr>
               </thead>
               <tbody>
                 {detail.prices.map((row, i) => (
                   <tr key={i}>
                     {row.map((cell, j) => (
-                      <td key={j} className="border border-gray-200 px-3 py-2 text-center text-gray-700 font-medium">
+                      <td key={j} className="border border-gray-200 px-3 py-2 text-center text-gray-700">
                         {cell}
                       </td>
                     ))}
@@ -204,9 +228,9 @@ function DetailContent({ detail, schedule, typeInfo }) {
           <table className="w-full border-collapse text-sm mb-6">
             <thead>
               <tr className="bg-gray-50">
-                <th className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold">시행사</th>
-                <th className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold">시공사</th>
-                <th className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold">사업주체 전화번호</th>
+                <th className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold text-xs">시행사</th>
+                <th className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold text-xs">시공사</th>
+                <th className="border border-gray-200 px-3 py-2 text-gray-600 font-semibold text-xs">사업주체 전화번호</th>
               </tr>
             </thead>
             <tbody>
@@ -221,8 +245,8 @@ function DetailContent({ detail, schedule, typeInfo }) {
       )}
 
       <p className="text-[11px] text-gray-400 leading-relaxed">
-        * 층별(동호수별) 세부 공급금액은 사업주체의 입주자모집 공고문을 참고하시기 바랍니다.<br />
-        * 기타 자세한 모집공고문 내용은 사업주체 홈페이지 및 구청 게시판 등에 게시된 내용을 참고하시기 바랍니다.
+        * 특별공급 신청 미달 시 잔여물량은 일반공급으로 전환됨에 따라 일반공급 세대 수가 변경될 수 있습니다.<br />
+        * 층별(동호수별) 세부 공급금액은 사업주체의 입주자모집 공고문을 참고하시기 바랍니다.
       </p>
     </>
   )
@@ -231,7 +255,6 @@ function DetailContent({ detail, schedule, typeInfo }) {
 function NoDetailFallback({ schedule, typeInfo }) {
   return (
     <div className="text-center py-12">
-      <div className="text-4xl mb-4">📋</div>
       <h4 className="text-lg font-bold text-gray-800 mb-2">{schedule.name}</h4>
       <span
         className="inline-block px-3 py-1 rounded-full text-xs font-semibold mb-4"
@@ -247,7 +270,7 @@ function NoDetailFallback({ schedule, typeInfo }) {
         <p>청약일: {schedule.date}</p>
       </div>
       <p className="mt-6 text-xs text-gray-400">
-        상세 정보는 Netlify 배포(Git 연동) 후 확인 가능합니다.
+        Netlify Functions 배포 후 상세 정보를 확인할 수 있습니다.
       </p>
     </div>
   )
@@ -261,7 +284,7 @@ function SectionTitle({ children }) {
   )
 }
 
-function InfoTableRow({ label, value }) {
+function TRow({ label, value }) {
   if (!value) return null
   return (
     <tr>
